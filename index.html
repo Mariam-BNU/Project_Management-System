@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #222;
+            color: white;
+            font-family: system-ui;
+        }
+        .Crud {
+            width: 80%;
+            margin: auto;
+        }
+        .head {
+            text-align: center;
+            text-transform: uppercase;
+            margin: 10px 0;
+        }
+        input {
+            background: #111;
+            width: 100%;
+            height: 30px;
+            outline: 0;
+            border: 0;
+            margin: 4px 0;
+            border-radius: 4px;
+            padding: 4px;
+            color: white;
+        }
+        input:focus {
+            background: #eee4e4;
+            color: black;
+            transform: scale(1.1);
+        }
+        .Price input {
+            width: 20%;
+        }
+        #total {
+            background: #a00d02;
+            padding: 4px 2px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 80px;
+            text-align: center;
+        }
+        #total::before {
+            content: 'Total: ';
+        }
+        button {
+            width: 100%;
+            height: 30px;
+            cursor: pointer;
+            background: rgb(156, 54, 117);
+            color: #fff;
+            border-radius: 20px;
+            transition: 0.5s;
+            border: none;
+        }
+        button:hover {
+            background: rgb(186, 93, 127);
+            letter-spacing: 1px;
+        }
+        .btnsearch {
+            display: flex;
+            justify-content: space-between;
+        }
+        .btnsearch button {
+            width: 45%;
+        }
+        table {
+            width: 100%;
+            text-align: center;
+            margin: 10px 0;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 10px;
+            border: 1px solid white;
+        }
+        table th {
+            text-transform: uppercase;
+        }
+        .delete-btn {
+            background: red;
+        }
+        .update-btn {
+            background: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="Crud">
+        <div class="head">
+            <h2>CRUD</h2>
+            <p>Product Management System</p>
+        </div>
+        <div class="input">
+            <input placeholder="Title" type="text" id="Title">
+            <div class="Price">
+                <input onkeyup="getTotal()" type="number" placeholder="Price" id="price">
+                <input onkeyup="getTotal()" type="number" placeholder="Taxes" id="taxes">
+                <input onkeyup="getTotal()" type="number" placeholder="Ads" id="ads">
+                <input onkeyup="getTotal()" type="number" placeholder="Discount" id="discount">
+                <small id="total"></small>
+            </div>
+            <input placeholder="Count" type="number" id="count">
+            <input placeholder="Category" type="text" id="Category">
+            <button id="submit">Create</button>
+        </div>
+        <div class="outputs">
+            <div class="searchBlock">
+                <input type="text" id="search" placeholder="Search">
+                <div class="btnsearch">
+                    <button id="searchTitle">Search by Title</button>
+                    <button id="searchCategory">Search by Category</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Title</th>
+                        <th>Price</th>
+                        <th>Taxes</th>
+                        <th>Ads</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                        <th>Category</th>
+                        <th>Update</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let productData = localStorage.getItem("products") ? JSON.parse(localStorage.getItem("products")) : [];
+
+        function getTotal() {
+            let price = document.getElementById("price").value || 0;
+            let taxes = document.getElementById("taxes").value || 0;
+            let ads = document.getElementById("ads").value || 0;
+            let discount = document.getElementById("discount").value || 0;
+            let total = document.getElementById("total");
+
+            let result = (+price + +taxes + +ads - +discount);
+            total.innerHTML = result >= 0 ? result : 0;
+            total.style.background = result >= 0 ? "#040" : "#a00d02";
+        }
+
+        function createProduct() {
+            let title = document.getElementById("Title").value.trim();
+            let price = document.getElementById("price").value;
+            let taxes = document.getElementById("taxes").value;
+            let ads = document.getElementById("ads").value;
+            let discount = document.getElementById("discount").value;
+            let total = document.getElementById("total").innerHTML;
+            let count = document.getElementById("count").value;
+            let category = document.getElementById("Category").value.trim();
+
+            if (!title || !price || !category || count <= 0) {
+                alert("Please fill in all fields correctly!");
+                return;
+            }
+
+            let product = { title, price, taxes, ads, discount, total, count, category };
+
+            productData.push(product);
+            localStorage.setItem("products", JSON.stringify(productData));
+            displayProducts();
+            clearInputs();
+        }
+
+        function clearInputs() {
+            document.getElementById("Title").value = "";
+            document.getElementById("price").value = "";
+            document.getElementById("taxes").value = "";
+            document.getElementById("ads").value = "";
+            document.getElementById("discount").value = "";
+            document.getElementById("total").innerHTML = "";
+            document.getElementById("count").value = "";
+            document.getElementById("Category").value = "";
+        }
+
+        function displayProducts() {
+            let tableContent = "";
+            productData.forEach((product, index) => {
+                tableContent += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${product.title}</td>
+                        <td>${product.price}</td>
+                        <td>${product.taxes}</td>
+                        <td>${product.ads}</td>
+                        <td>${product.discount}</td>
+                        <td>${product.total}</td>
+                        <td>${product.category}</td>
+                        <td><button class="update-btn" onclick="updateProduct(${index})">Update</button></td>
+                        <td><button class="delete-btn" onclick="deleteProduct(${index})">Delete</button></td>
+                    </tr>`;
+            });
+            document.querySelector("tbody").innerHTML = tableContent;
+        }
+
+        function deleteProduct(index) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                productData.splice(index, 1);
+                localStorage.setItem("products", JSON.stringify(productData));
+                displayProducts();
+            }
+        }
+
+        document.getElementById("submit").addEventListener("click", createProduct);
+        document.addEventListener("DOMContentLoaded", displayProducts);
+    </script>
+</body>
+</html>
